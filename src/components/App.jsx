@@ -16,7 +16,7 @@ export default function App () {
     if (filter === '') {
       return contacts;
     }
-console.log(contacts)
+
     return contacts.filter(item =>
       item.name.toLocaleLowerCase().includes(filter)
     );
