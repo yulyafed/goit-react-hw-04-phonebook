@@ -6,7 +6,7 @@ display: flex;
 flex-direction: column;
 gap:16px;
 border: 1px solid black;
-width:30%;
+width:40%;
 margin-left: 15px;
 `;
 

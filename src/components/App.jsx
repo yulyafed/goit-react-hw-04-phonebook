@@ -1,80 +1,62 @@
 import { nanoid } from 'nanoid';
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { PhonebookForm } from './PhonebookForm/PhonebookForm';
 import { ContactsFilter } from './ContactsFilter/ContactsFilter';
 import { ContactsList } from './ContactsList/ContactsList';
 import { Title, TitleContact } from './App.styled';
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
-
-  filteredContacts = () => {
-    if (this.state.filter.trim() === '') {
-      return this.state.contacts;
+export default function App () {
+  
+  const [contacts, setContacts] = useState(() => {
+    return JSON.parse(localStorage.getItem('contacts')) ?? [];
+  } );
+  const [filter, setFilter] = useState('');
+  
+  const filteredContacts = () => {
+    if (filter === '') {
+      return contacts;
     }
-
-    return this.state.contacts.filter(item =>
-      item.name.toLocaleLowerCase().includes(this.state.filter)
+console.log(contacts)
+    return contacts.filter(item =>
+      item.name.toLocaleLowerCase().includes(filter)
     );
   };
 
-  deleteContacts = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
-  };
-
-  componentDidMount() { 
-    const gettedContacts = localStorage.getItem('contacts');
-    if (!gettedContacts) { 
-         return
-    }
-    
-    const parsedContacts = JSON.parse(gettedContacts);
-    this.setState({ contacts: parsedContacts });
+  const deleteContacts = contactId => { 
+    setContacts(contacts.filter(contact => contact.id !== contactId))
   }
+  
+  useEffect(() => {
+     
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+   
+  },[contacts]);
 
-  componentDidUpdate(prevProps, prevState) { 
-    if (this.state.contacts !== prevState.contacts) { 
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
-
-render() {
     return (
       <>
         <Title>Phonebook</Title>
-          <PhonebookForm
-            addContact={(contactName, contactNumber) => {
-              if (
-                !this.state.contacts.some(
-                  contact => contact.name === contactName
-                )
-              ) {
-                return this.setState(prevState => ({
-                  contacts: [
-                    ...prevState.contacts,
-                    { id: nanoid(), name: contactName, number: contactNumber },
-                  ],
-                }));
-              }
-              alert(`${contactName} is already in contacts`);
-            }}
+        <PhonebookForm
+          addContact={(contactName, contactNumber) => {
+            if (!contacts.some(contact => contact.name === contactName)) {
+              setContacts([
+                ...contacts,
+                { id: nanoid(), name: contactName, number: contactNumber },
+              ]);
+              return;
+            }
+            alert(`${contactName} is already in contacts`);
+          }}
         />
         <TitleContact>Contacts</TitleContact>
         <ContactsFilter
-          initialValue={this.state.filter}
-          filterChanged={filterValue => this.setState({ filter: filterValue })}
+          initialValue={filter}
+          filterChanged={filterValue => setFilter(filterValue)}
         />
-
         <ContactsList
-          contacts={this.filteredContacts()}
-          onDeleteContact={this.deleteContacts}
+          contacts={filteredContacts()}
+          onDeleteContact={deleteContacts}
         />
       </>
     );
   }
-}
+
